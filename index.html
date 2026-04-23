@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VOLGA ESSENCE — Ароматы, рождённые великой рекой</title>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Italiana&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<!-- Leaflet for map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+/* =========================================================
+   VOLGA ESSENCE — Luxury Perfume Boutique
+   ========================================================= */
+
+/* ---------- RESET ---------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  color: var(--text);
+  background: var(--bg);
+  overflow-x: hidden;
+  cursor: none;
+  transition: background .6s ease, color .6s ease;
+  letter-spacing: .01em;
+}
+
+/* ---------- THEME VARIABLES ---------- */
+:root {
+  --bg: #f4efe6;
+  --marble-a: #faf6ee;
+  --marble-b: #e8e0d0;
+  --marble-vein: rgba(140,110,60,.09);
+  --text: #1e1a17;
+  --text-soft: #7a6f62;
+  --card-bg: rgba(250,246,238,.6);
+  --card-border: rgba(168,133,58,.3);
+  --shadow: 0 10px 40px rgba(40,30,15,.08);
+  --gold-grad: linear-gradient(120deg, #8a6d2e 0%, #e8d690 25%, #c9a961 50%, #dcc78a 75%, #a8853a 100%);
+  --gold-solid: #a8853a;
+}
+body.dark {
+  --bg: #0a0908;
+  --marble-a: #131110;
+  --marble-b: #1a1816;
+  --marble-vein: rgba(232,214,144,.07);
+  --text: #ede5d1;
+  --text-soft: #9a8f7d;
+  --card-bg: rgba(18,16,14,.6);
+  --card-border: rgba(201,169,97,.28);
+  --shadow: 0 10px 40px rgba(0,0,0,.6);
+}
+
+/* ---------- MARBLE BACKGROUND ---------- */
+body::before {
+  content: "";
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 30%, var(--marble-vein) 0%, transparent 40%),
+    radial-gradient(ellipse at 80% 60%, var(--marble-vein) 0%, transparent 45%),
+    radial-gradient(ellipse at 60% 20%, rgba(191,149,63,.08) 0%, transparent 35%),
+    linear-gradient(135deg, var(--marble-a) 0%, var(--marble-b) 50%, var(--marble-a) 100%);
+  z-index: -2;
+}
+body::after {
+  content: "";
+  position: fixed; inset: 0;
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='1200'><path d='M0,300 Q300,250 600,320 T1200,280' stroke='rgba(170,119,28,0.10)' stroke-width='1' fill='none'/><path d='M100,700 Q400,650 700,720 T1200,680' stroke='rgba(191,149,63,0.08)' stroke-width='1.2' fill='none'/><path d='M0,900 Q250,870 500,930 T1000,900' stroke='rgba(170,119,28,0.06)' stroke-width='1' fill='none'/><path d='M0,100 Q400,140 800,80 T1600,120' stroke='rgba(191,149,63,0.07)' stroke-width='.8' fill='none'/></svg>");
+  background-size: 1400px 1400px;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .9;
+}
+
+/* ---------- GOLD SHIMMER ---------- */
+.gold-text {
+  background: var(--gold-grad);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: shimmer 6s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0%,100% { background-position: 0% 50%; }
+  50%     { background-position: 100% 50%; }
+}
+.gold-bg {
+  background: var(--gold-grad);
+  background-size: 300% 300%;
+  animation: shimmer 6s ease-in-out infinite;
+}
+
+/* ---------- CUSTOM CURSOR ---------- */
+.cursor-dot, .cursor-ring {
+  position: fixed; top: 0; left: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transition: width .3s ease, height .3s ease, opacity .3s ease, background .3s ease;
+}
+.cursor-dot {
+  width: 4px; height: 4px;
+  background: #e8d690;
+  box-shadow: 0 0 6px rgba(232,214,144,.9), 0 0 14px rgba(201,169,97,.5);
+  border-radius: 50%;
+}
+.cursor-ring {
+  width: 28px; height: 28px;
+  border: 1px solid rgba(201,169,97,.75);
+  transform: rotate(45deg) translate(-50%,-50%);
+  transform-origin: 0 0;
+  background: transparent;
+}
+.cursor-ring.hover {
+  width: 44px; height: 44px;
+  border-color: #e8d690;
+  background: radial-gradient(circle, rgba(232,214,144,.15), transparent 70%);
+}
+@media (max-width: 768px), (pointer: coarse) {
+  body { cursor: auto; }
+  .cursor-dot, .cursor-ring { display: none; }
+}
+
+/* ---------- NAV ---------- */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 18px 40px;
+  display: flex; justify-content: space-between; align-items: center;
+  backdrop-filter: blur(14px);
+  background: linear-gradient(to bottom, rgba(245,241,234,.75), rgba(245,241,234,.25));
+  border-bottom: 1px solid var(--card-border);
+  transition: background .6s ease;
+}
+body.dark .nav {
+  background: linear-gradient(to bottom, rgba(12,10,9,.8), rgba(12,10,9,.3));
+}
+.nav-logo {
+  font-family: 'Italiana', serif;
+  font-weight: 400; font-size: 1.4rem;
+  letter-spacing: .45em;
+  color: var(--text);
+}
+.nav-links {
+  display: flex; gap: 36px;
+  list-style: none;
+}
+.nav-links a {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: .72rem; letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-decoration: none;
+  position: relative;
+}
+.nav-links a::after {
+  content: ""; position: absolute; bottom: -6px; left: 0;
+  width: 0; height: 1px;
+  background: var(--gold-grad);
+  transition: width .35s ease;
+}
+.nav-links a:hover::after { width: 100%; }
+.nav-tools { display: flex; gap: 14px; align-items: center; }
+.icon-btn {
+  width: 36px; height: 36px;
+  border: 1px solid var(--card-border);
+  background: transparent;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: none;
+  color: var(--text);
+  transition: border-color .3s ease, transform .3s ease;
+}
+.icon-btn:hover { border-color: var(--gold-solid); color: var(--gold-solid); transform: rotate(15deg); }
+.icon-btn svg { width: 16px; height: 16px; }
+@media (max-width: 768px) {
+  .nav { padding: 12px 18px; }
+  .nav-links { display: none; }
+}
+
+/* ---------- SECTION BASE ---------- */
+section {
+  padding: 120px 40px;
+  position: relative;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+@media (max-width: 768px) { section { padding: 80px 20px; } }
+.section-title {
+  font-family: 'Italiana', serif;
+  font-weight: 400; font-size: clamp(2.4rem, 5vw, 4rem);
+  text-align: center;
+  margin-bottom: 10px;
+  letter-spacing: .18em;
+  color: var(--text);
+  text-transform: uppercase;
+}
+.section-sub {
+  text-align: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 1.2rem;
+  color: var(--text-soft);
+  margin-bottom: 60px;
+  letter-spacing: .03em;
+}
+.divider {
+  width: 120px; height: 2px;
+  margin: 20px auto 50px;
+  background: var(--gold-grad);
+  background-size: 300% 300%;
+  animation: shimmer 6s ease-in-out infinite;
+  position: relative;
+}
+.divider::before, .divider::after {
+  content: ""; position: absolute;
+  width: 8px; height: 8px; top: 50%; transform: translateY(-50%) rotate(45deg);
+  background: var(--gold-grad);
+  background-size: 300% 300%;
+  animation: shimmer 6s ease-in-out infinite;
+}
+.divider::before { left: -16px; }
+.divider::after  { right: -16px; }
+
+/* ---------- ORNATE FRAME ---------- */
+.ornate-frame {
+  position: relative;
+  padding: 60px 40px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow);
+}
+.ornate-frame .corner {
+  position: absolute;
+  width: 44px; height: 44px;
+  pointer-events: none;
+}
+.ornate-frame .corner svg { width: 100%; height: 100%; }
+.ornate-frame .c-tl { top: 8px; left: 8px; }
+.ornate-frame .c-tr { top: 8px; right: 8px; transform: scaleX(-1); }
+.ornate-frame .c-bl { bottom: 8px; left: 8px; transform: scaleY(-1); }
+.ornate-frame .c-br { bottom: 8px; right: 8px; transform: scale(-1,-1); }
+
+/* ---------- HERO ---------- */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  text-align: center;
+  max-width: 100%;
+  padding: 120px 20px 80px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+.hero-bg .bottle-art {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 60vmin; height: 80vmin;
+  transform: translate(-50%,-50%);
+  opacity: .14;
+  animation: kenBurns 22s ease-in-out infinite alternate;
+}
+body.dark .hero-bg .bottle-art { opacity: .22; }
+@keyframes kenBurns {
+  0%   { transform: translate(-50%,-50%) scale(1) rotate(-1deg); }
+  100% { transform: translate(-52%,-48%) scale(1.12) rotate(1deg); }
+}
+.hero-logo {
+  font-family: 'Italiana', serif;
+  font-weight: 400;
+  font-size: clamp(3.2rem, 12vw, 10rem);
+  letter-spacing: .22em;
+  line-height: 1;
+  color: var(--text);
+  cursor: none;
+  position: relative;
+  padding: 0 .15em;
+}
+.hero-logo .amp {
+  display: block;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: .22em;
+  font-style: italic;
+  font-weight: 300;
+  letter-spacing: .8em;
+  margin-top: 22px;
+  color: var(--text-soft);
+  text-transform: lowercase;
+}
+.hero-tagline {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(1.1rem, 1.8vw, 1.4rem);
+  margin-top: 40px;
+  color: var(--text-soft);
+  letter-spacing: .04em;
+  max-width: 640px;
+  line-height: 1.5;
+}
+.hero-cta {
+  margin-top: 56px;
+  display: inline-block;
+  padding: 17px 52px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: .75rem; letter-spacing: .4em;
+  text-transform: uppercase;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--gold-solid);
+  cursor: none;
+  text-decoration: none;
+  transition: background .4s ease, color .4s ease;
+}
+.hero-cta:hover { background: var(--gold-solid); color: var(--bg); }
+
+.hero-ornament {
+  width: min(420px, 70vw);
+  height: 30px;
+  opacity: .85;
+}
+.hero-ornament.top    { margin-bottom: 30px; }
+.hero-ornament.bottom { margin-top: 24px; }
+.hero-ornament svg { width: 100%; height: 100%; display: block; }
+
+/* Gold particles */
+.particle {
+  position: fixed;
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #e8d690, #a8853a);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  animation: floatUp linear infinite;
+  box-shadow: 0 0 8px rgba(232,214,144,.5);
+}
+@keyframes floatUp {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: .7; }
+  100% { transform: translateY(-100vh) translateX(var(--drift,20px)); opacity: 0; }
+}
+
+/* ---------- ABOUT ---------- */
+.about-grid { max-width: 820px; margin: 0 auto; text-align: center; }
+.about-text p {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: 1.25rem;
+  line-height: 1.85;
+  margin-bottom: 28px;
+  color: var(--text);
+  letter-spacing: .015em;
+}
+.about-text .about-motto {
+  font-family: 'Italiana', serif;
+  font-style: normal;
+  font-size: 1.5rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin-top: 40px;
+  padding-top: 30px;
+  position: relative;
+  line-height: 1.6;
+}
+.about-text .about-motto::before {
+  content: ""; position: absolute;
+  top: 0; left: 50%; transform: translateX(-50%);
+  width: 60px; height: 1px;
+  background: var(--gold-solid);
+}
+
+/* ---------- CATALOG ---------- */
+.filters {
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 10px;
+  margin-bottom: 50px;
+}
+.filter-btn {
+  padding: 11px 26px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: .72rem; letter-spacing: .28em;
+  text-transform: uppercase;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--card-border);
+  cursor: none;
+  transition: all .35s ease;
+  border-radius: 0;
+}
+.filter-btn:hover { border-color: var(--gold-solid); color: var(--gold-solid); }
+.filter-btn.active {
+  background: var(--gold-solid);
+  color: var(--bg);
+  border-color: var(--gold-solid);
+}
+
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+}
+.perfume-card {
+  position: relative;
+  padding: 30px 24px 26px;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border);
+  text-align: center;
+  transition: transform .5s ease, box-shadow .5s ease;
+  cursor: none;
+  overflow: hidden;
+}
+.perfume-card::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(252,246,186,.35), transparent 50%);
+  opacity: 0; transition: opacity .4s ease;
+  pointer-events: none;
+}
+.perfume-card:hover::before { opacity: 1; }
+.perfume-card:hover {
+  box-shadow: 0 20px 60px rgba(168,133,58,.28), 0 0 0 1px var(--gold-solid);
+}
+.bottle {
+  width: 120px; height: 170px;
+  margin: 0 auto 20px;
+  position: relative;
+}
+.bottle svg { width: 100%; height: 100%; }
+.perfume-name {
+  font-family: 'Italiana', serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: .14em;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.perfume-family {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: .95rem;
+  color: var(--text-soft);
+  margin-bottom: 20px;
+  letter-spacing: .06em;
+}
+.pyramid {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: .95rem;
+  line-height: 1.8;
+  color: var(--text);
+  margin-bottom: 16px;
+  text-align: left;
+  padding: 14px 14px;
+  border-top: 1px solid var(--card-border);
+  border-bottom: 1px solid var(--card-border);
+}
+.pyramid b {
+  color: var(--gold-solid);
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .24em;
+  font-size: .65rem;
+  display: inline-block;
+  margin-right: 6px;
+}
+.perfume-desc {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--text-soft);
+  margin-bottom: 22px;
+  min-height: 56px;
+}
+.perfume-price {
+  font-family: 'Italiana', serif;
+  font-size: 1.5rem;
+  letter-spacing: .08em;
+  color: var(--gold-solid);
+  margin-bottom: 18px;
+}
+.order-btn {
+  width: 100%;
+  padding: 14px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: .72rem; letter-spacing: .32em;
+  text-transform: uppercase;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--card-border);
+  cursor: none;
+  position: relative;
+  overflow: hidden;
+  transition: color .35s ease, border-color .35s ease, background .35s ease;
+  z-index: 1;
+}
+.order-btn:hover {
+  background: var(--gold-solid);
+  color: var(--bg);
+  border-color: var(--gold-solid);
+}
+
+/* ---------- MODAL ---------- */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.75);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  transition: opacity .4s ease;
+}
+.modal-overlay.active { display: flex; opacity: 1; }
+.modal {
+  background: var(--bg);
+  max-width: 640px;
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: 50px 40px;
+  position: relative;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 0 80px rgba(168,133,58,.25);
+  transform: translateY(40px);
+  opacity: 0;
+  transition: all .5s cubic-bezier(.3,0,.2,1);
+}
+.modal-overlay.active .modal { transform: translateY(0); opacity: 1; }
+.modal::before, .modal::after {
+  content: ""; position: absolute;
+  width: 40px; height: 40px;
+  border: 1px solid var(--gold-solid);
+}
+.modal::before { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+.modal::after  { bottom: 10px; right: 10px; border-left: none; border-top: none; }
+.modal-close {
+  position: absolute; top: 16px; right: 16px;
+  width: 32px; height: 32px;
+  background: transparent; border: 1px solid var(--card-border);
+  color: var(--text);
+  cursor: none;
+  border-radius: 50%;
+  font-size: 1rem;
+  transition: transform .3s ease, border-color .3s ease;
+}
+.modal-close:hover { transform: rotate(90deg); border-color: var(--gold-solid); color: var(--gold-solid); }
+.modal-title {
+  font-family: 'Italiana', serif;
+  font-size: 2rem; text-align: center;
+  margin-bottom: 6px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.modal-sub {
+  text-align: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: var(--text-soft);
+  margin-bottom: 30px;
+}
+
+.stepper {
+  display: flex; justify-content: center;
+  gap: 6px;
+  margin-bottom: 30px;
+}
+.step-dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .75rem;
+  border: 1px solid var(--card-border);
+  color: var(--text-soft);
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  transition: all .3s ease;
+}
+.step-dot.active {
+  background: var(--gold-solid);
+  color: var(--bg);
+  border-color: var(--gold-solid);
+}
+.step-line {
+  flex: 0 0 24px; align-self: center;
+  height: 1px; background: var(--card-border);
+}
+
+.step-panel { display: none; }
+.step-panel.active { display: block; animation: fadeIn .4s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.volume-opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; }
+.volume-opt {
+  padding: 24px 10px;
+  text-align: center;
+  border: 1px solid var(--card-border);
+  cursor: none;
+  font-family: 'Cormorant Garamond', serif;
+  background: transparent;
+  color: var(--text);
+  transition: all .3s ease;
+}
+.volume-opt .vol { font-family: 'Italiana', serif; font-size: 1.5rem; letter-spacing: .1em; }
+.volume-opt .price { font-size: .9rem; color: var(--text-soft); margin-top: 6px; font-family: 'Inter', sans-serif; letter-spacing: .05em; }
+.volume-opt.active {
+  border-color: var(--gold-solid);
+  color: var(--gold-solid);
+}
+.volume-opt.active .price { color: var(--gold-solid); }
+
+.field { margin-bottom: 18px; }
+.field label {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: .68rem; letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  margin-bottom: 8px;
+}
+.field input {
+  width: 100%;
+  padding: 13px 14px;
+  background: transparent;
+  border: 1px solid var(--card-border);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: .95rem;
+  outline: none;
+  cursor: none;
+  transition: border-color .3s ease;
+  letter-spacing: .02em;
+}
+.field input:focus { border-color: var(--gold-solid); }
+.field.invalid input { border-color: #c53030; }
+.err { font-size: .75rem; color: #c53030; margin-top: 4px; display: none; }
+.field.invalid .err { display: block; }
+
+.next-btn, .back-btn {
+  padding: 14px 32px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: .72rem; letter-spacing: .32em;
+  text-transform: uppercase;
+  border: 1px solid var(--card-border);
+  background: transparent;
+  color: var(--text);
+  cursor: none;
+  transition: all .35s ease;
+  margin-top: 10px;
+}
+.next-btn {
+  background: var(--gold-solid);
+  color: var(--bg);
+  border: 1px solid var(--gold-solid);
+}
+.next-btn:hover { background: transparent; color: var(--gold-solid); }
+.modal-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 16px; }
+.back-btn:hover { border-color: #bf953f; }
+
+#pickup-map {
+  height: 320px;
+  margin-bottom: 14px;
+  border: 1px solid var(--card-border);
+}
+.selected-pickup {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: var(--text-soft);
+  margin-bottom: 10px;
+  min-height: 24px;
+  text-align: center;
+}
+
+.pay-methods { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 20px; }
+.pay-method {
+  padding: 18px 10px;
+  text-align: center;
+  border: 1px solid var(--card-border);
+  cursor: none;
+  background: transparent;
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: .75rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  transition: all .3s ease;
+}
+.pay-method.active {
+  border-color: var(--gold-solid);
+  color: var(--gold-solid);
+}
+.qr-wrap {
+  display: none;
+  text-align: center;
+  padding: 20px;
+  border: 1px solid var(--card-border);
+  margin-bottom: 10px;
+}
+.qr-wrap.show { display: block; animation: fadeIn .4s ease; }
+.qr-code {
+  width: 180px; height: 180px;
+  margin: 0 auto 14px;
+  background: #fff;
+  padding: 10px;
+  border: 1px solid var(--gold-solid);
+  display: flex; align-items: center; justify-content: center;
+}
+.timer {
+  font-family: 'Italiana', serif;
+  font-size: 1.6rem;
+  color: var(--gold-solid);
+  margin-top: 12px;
+  letter-spacing: .15em;
+}
+
+.success-screen { text-align: center; padding: 30px 10px; position: relative; }
+.success-icon {
+  width: 80px; height: 80px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  border: 1px solid var(--gold-solid);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--gold-solid);
+}
+.success-icon svg { width: 36px; height: 36px; stroke: var(--bg) !important; }
+.order-num {
+  font-family: 'Italiana', serif;
+  font-size: 1.8rem;
+  margin: 14px 0;
+  letter-spacing: .25em;
+  color: var(--gold-solid);
+}
+
+.confetti {
+  position: absolute;
+  width: 8px; height: 14px;
+  top: 0;
+  pointer-events: none;
+  animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  0%   { transform: translateY(-20px) rotate(0); opacity: 1; }
+  100% { transform: translateY(700px) rotate(720deg); opacity: 0; }
+}
+
+/* ---------- CONTACTS ---------- */
+.contact-card {
+  max-width: 720px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+@media (max-width: 600px) { .contact-card { grid-template-columns: 1fr; } }
+.contact-card h4 {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: .7rem;
+  text-transform: uppercase;
+  letter-spacing: .35em;
+  color: var(--gold-solid);
+  margin-bottom: 14px;
+  margin-top: 28px;
+}
+.contact-card h4:first-child { margin-top: 0; }
+.contact-card p, .contact-card a {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: 1.2rem;
+  color: var(--text);
+  text-decoration: none;
+  display: block;
+  line-height: 1.7;
+  margin-bottom: 10px;
+  letter-spacing: .02em;
+}
+.contact-card a:hover { color: var(--gold-solid); }
+
+/* ---------- FOOTER ---------- */
+footer {
+  padding: 60px 40px 40px;
+  text-align: center;
+  border-top: 1px solid var(--card-border);
+  margin-top: 80px;
+}
+footer .foot-logo {
+  font-family: 'Italiana', serif;
+  font-weight: 400;
+  font-size: 1.6rem;
+  letter-spacing: .45em;
+  margin-bottom: 20px;
+  color: var(--text);
+}
+footer .foot-links {
+  list-style: none;
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 28px;
+  margin-bottom: 24px;
+}
+footer .foot-links a {
+  text-decoration: none;
+  color: var(--text-soft);
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: .68rem;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  transition: color .3s ease;
+}
+footer .foot-links a:hover { color: var(--gold-solid); }
+footer small {
+  color: var(--text-soft);
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: .65rem;
+  letter-spacing: .3em;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 1s ease, transform 1s ease;
+}
+.reveal.in { opacity: 1; transform: translateY(0); }
+
+/* ---------- EASTER EGG ---------- */
+.egg-bloom {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9000;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.4rem;
+  background: var(--gold-grad);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s ease-in-out infinite, eggFade 3s ease forwards;
+  text-align: center;
+}
+@keyframes eggFade {
+  0%   { opacity: 0; transform: translateY(0) scale(.8); }
+  30%  { opacity: 1; transform: translateY(-30px) scale(1); }
+  100% { opacity: 0; transform: translateY(-80px) scale(1.1); }
+}
+
+.leaflet-container, .leaflet-container * { cursor: none !important; }
+</style>
+</head>
+<body>
+
+<!-- ============ Custom cursor ============ -->
+<div class="cursor-dot"></div>
+<div class="cursor-ring"></div>
+
+<!-- ============ NAV ============ -->
+<nav class="nav">
+  <div class="nav-logo gold-text">V · E</div>
+  <ul class="nav-links">
+    <li><a href="#about">О бренде</a></li>
+    <li><a href="#catalog">Каталог</a></li>
+    <li><a href="#contacts">Контакты</a></li>
+  </ul>
+  <div class="nav-tools">
+    <button class="icon-btn" id="theme-toggle" title="Тема">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" id="theme-icon">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero" id="top">
+  <div class="hero-bg">
+    <svg class="bottle-art" viewBox="0 0 200 280" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bottleGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"   stop-color="#bf953f"/>
+          <stop offset="50%"  stop-color="#fcf6ba"/>
+          <stop offset="100%" stop-color="#aa771c"/>
+        </linearGradient>
+      </defs>
+      <rect x="80" y="10" width="40" height="30" rx="3" fill="url(#bottleGrad)"/>
+      <rect x="70" y="40" width="60" height="18" fill="url(#bottleGrad)" opacity=".8"/>
+      <path d="M55,60 Q55,90 60,120 L60,240 Q60,270 100,270 Q140,270 140,240 L140,120 Q145,90 145,60 Z"
+        fill="url(#bottleGrad)" opacity=".9"/>
+      <ellipse cx="100" cy="170" rx="25" ry="40" fill="#fcf6ba" opacity=".4"/>
+    </svg>
+  </div>
+  <div class="hero-ornament top">
+    <svg viewBox="0 0 400 30" xmlns="http://www.w3.org/2000/svg"><path d="M0,15 L160,15 M200,8 L200,22 M240,15 L400,15 M195,15 L205,15 M200,5 Q210,15 200,25 Q190,15 200,5" stroke="url(#heroGold)" stroke-width=".8" fill="none"/><defs><linearGradient id="heroGold" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="transparent"/><stop offset="50%" stop-color="#c9a961"/><stop offset="100%" stop-color="transparent"/></linearGradient></defs></svg>
+  </div>
+  <h1 class="hero-logo">
+    VOLGA
+    <span class="amp">— essence —</span>
+  </h1>
+  <div class="hero-ornament bottom">
+    <svg viewBox="0 0 400 30" xmlns="http://www.w3.org/2000/svg"><path d="M0,15 L160,15 M200,8 L200,22 M240,15 L400,15 M195,15 L205,15 M200,5 Q210,15 200,25 Q190,15 200,5" stroke="url(#heroGold2)" stroke-width=".8" fill="none"/><defs><linearGradient id="heroGold2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="transparent"/><stop offset="50%" stop-color="#c9a961"/><stop offset="100%" stop-color="transparent"/></linearGradient></defs></svg>
+  </div>
+  <p class="hero-tagline">Ароматы, рождённые великой рекой.<br/>Парфюмерия, в которой слышен шёпот веков и плеск воды.</p>
+  <a href="#catalog" class="hero-cta">Открыть каталог</a>
+</header>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="reveal">
+  <h2 class="section-title">О бренде</h2>
+  <div class="divider"></div>
+  <div class="ornate-frame">
+    <span class="corner c-tl"><svg viewBox="0 0 44 44"><path d="M2,2 L2,20 M2,2 L20,2 M6,6 Q14,10 20,6 M6,6 Q10,14 6,20" stroke="url(#ornGrad)" stroke-width="1.2" fill="none"/><circle cx="6" cy="6" r="2.5" fill="url(#ornGrad)"/><defs><linearGradient id="ornGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#bf953f"/><stop offset="50%" stop-color="#fcf6ba"/><stop offset="100%" stop-color="#aa771c"/></linearGradient></defs></svg></span>
+    <span class="corner c-tr"><svg viewBox="0 0 44 44"><path d="M2,2 L2,20 M2,2 L20,2 M6,6 Q14,10 20,6 M6,6 Q10,14 6,20" stroke="url(#ornGrad)" stroke-width="1.2" fill="none"/><circle cx="6" cy="6" r="2.5" fill="url(#ornGrad)"/></svg></span>
+    <span class="corner c-bl"><svg viewBox="0 0 44 44"><path d="M2,2 L2,20 M2,2 L20,2 M6,6 Q14,10 20,6 M6,6 Q10,14 6,20" stroke="url(#ornGrad)" stroke-width="1.2" fill="none"/><circle cx="6" cy="6" r="2.5" fill="url(#ornGrad)"/></svg></span>
+    <span class="corner c-br"><svg viewBox="0 0 44 44"><path d="M2,2 L2,20 M2,2 L20,2 M6,6 Q14,10 20,6 M6,6 Q10,14 6,20" stroke="url(#ornGrad)" stroke-width="1.2" fill="none"/><circle cx="6" cy="6" r="2.5" fill="url(#ornGrad)"/></svg></span>
+    <div class="about-grid">
+      <div class="about-text">
+        <p>Volga Essence — дом нишевой парфюмерии, где каждая композиция рождается как глава рукописного манускрипта. Мы черпаем вдохновение в городах великой реки: от серебристой Твери до пряной Астрахани. Каждая формула — портрет места, написанный языком запахов.</p>
+        <p class="about-motto">Мы не гонимся за трендами.<br/>Мы реставрируем чувства.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CATALOG ============ -->
+<section id="catalog" class="reveal">
+  <h2 class="section-title">Коллекция ароматов</h2>
+  <p class="section-sub">Восемь городов, восемь характеров, восемь историй</p>
+  <div class="divider"></div>
+
+  <div class="filters" id="filters">
+    <button class="filter-btn active" data-f="all">Все</button>
+    <button class="filter-btn" data-f="oriental">Восточные</button>
+    <button class="filter-btn" data-f="floral">Цветочные</button>
+    <button class="filter-btn" data-f="woody">Древесные</button>
+    <button class="filter-btn" data-f="fresh">Свежие</button>
+  </div>
+
+  <div class="catalog-grid" id="catalog-grid"></div>
+</section>
+
+<!-- ============ CONTACTS ============ -->
+<section id="contacts" class="reveal">
+  <h2 class="section-title">Флагманский бутик</h2>
+  <div class="divider"></div>
+  <div class="ornate-frame">
+    <span class="corner c-tl"><svg viewBox="0 0 44 44"><path d="M2,2 L2,20 M2,2 L20,2 M6,6 Q14,10 20,6 M6,6 Q10,14 6,20" stroke="url(#ornGrad)" stroke-width="1.2" fill="none"/><circle cx="6" cy="6" r="2.5" fill="url(#ornGrad)"/></svg></span>
+    <span class="corner c-tr"><svg viewBox="0 0 44 44"><path d="M2,2 L2,20 M2,2 L20,2 M6,6 Q14,10 20,6 M6,6 Q10,14 6,20" stroke="url(#ornGrad)" stroke-width="1.2" fill="none"/><circle cx="6" cy="6" r="2.5" fill="url(#ornGrad)"/></svg></span>
+    <span class="corner c-bl"><svg viewBox="0 0 44 44"><path d="M2,2 L2,20 M2,2 L20,2 M6,6 Q14,10 20,6 M6,6 Q10,14 6,20" stroke="url(#ornGrad)" stroke-width="1.2" fill="none"/><circle cx="6" cy="6" r="2.5" fill="url(#ornGrad)"/></svg></span>
+    <span class="corner c-br"><svg viewBox="0 0 44 44"><path d="M2,2 L2,20 M2,2 L20,2 M6,6 Q14,10 20,6 M6,6 Q10,14 6,20" stroke="url(#ornGrad)" stroke-width="1.2" fill="none"/><circle cx="6" cy="6" r="2.5" fill="url(#ornGrad)"/></svg></span>
+    <div class="contact-card">
+      <div>
+        <h4>Адрес</h4>
+        <p>Нижний Новгород<br/>ул. Рождественская, 24<br/>Особняк купца Стрельцова</p>
+        <h4>Часы работы</h4>
+        <p>Пн — Пт: 11:00 — 21:00<br/>Сб — Вс: 12:00 — 22:00</p>
+      </div>
+      <div>
+        <h4>Связь</h4>
+        <a href="tel:+78001234567">+7 (800) 123-45-67</a>
+        <a href="mailto:hello@volga-essence.ru">hello@volga-essence.ru</a>
+        <a href="https://t.me/volgaessence">Telegram — @volgaessence</a>
+        <a href="https://instagram.com/volgaessence">Instagram — volgaessence</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="foot-logo gold-text">VOLGA ESSENCE</div>
+  <ul class="foot-links">
+    <li><a href="#">Политика</a></li>
+    <li><a href="#">Оферта</a></li>
+    <li><a href="#">Доставка</a></li>
+    <li><a href="#">Возврат</a></li>
+  </ul>
+  <small>© 2026 VOLGA ESSENCE MAISON · ВСЕ ПРАВА ЗАЩИЩЕНЫ</small>
+</footer>
+
+<!-- ============ ORDER MODAL ============ -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal-close" id="modal-close">×</button>
+    <h3 class="modal-title gold-text" id="modal-title">Astrakhan Amber</h3>
+    <p class="modal-sub">Оформление заказа</p>
+
+    <div class="stepper" id="stepper">
+      <div class="step-dot active">1</div><div class="step-line"></div>
+      <div class="step-dot">2</div><div class="step-line"></div>
+      <div class="step-dot">3</div><div class="step-line"></div>
+      <div class="step-dot">4</div><div class="step-line"></div>
+      <div class="step-dot">5</div>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="step-panel active" data-step="1">
+      <p class="modal-sub" style="margin-bottom:18px;">Выберите объём флакона</p>
+      <div class="volume-opts" id="volume-opts">
+        <button class="volume-opt active" data-vol="30" data-mult="1"><div class="vol">30 мл</div><div class="price">— ₽</div></button>
+        <button class="volume-opt" data-vol="50" data-mult="1.5"><div class="vol">50 мл</div><div class="price">— ₽</div></button>
+        <button class="volume-opt" data-vol="100" data-mult="2.6"><div class="vol">100 мл</div><div class="price">— ₽</div></button>
+      </div>
+      <div class="modal-actions">
+        <span></span>
+        <button class="next-btn" data-next="2">Далее →</button>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step-panel" data-step="2">
+      <div class="field" id="f-name">
+        <label>ФИО</label>
+        <input type="text" id="in-name" placeholder="Иван Иванов"/>
+        <div class="err">Введите ваше имя</div>
+      </div>
+      <div class="field" id="f-phone">
+        <label>Телефон</label>
+        <input type="tel" id="in-phone" placeholder="+7 (___) ___-__-__"/>
+        <div class="err">Некорректный телефон</div>
+      </div>
+      <div class="field" id="f-email">
+        <label>Email</label>
+        <input type="email" id="in-email" placeholder="you@example.com"/>
+        <div class="err">Некорректный email</div>
+      </div>
+      <div class="modal-actions">
+        <button class="back-btn" data-back="1">← Назад</button>
+        <button class="next-btn" data-next="3">Далее →</button>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step-panel" data-step="3">
+      <p class="modal-sub" style="margin-bottom:14px;">Выберите пункт выдачи СДЭК</p>
+      <div id="pickup-map"></div>
+      <div class="selected-pickup" id="selected-pickup">Нажмите на маркер на карте</div>
+      <div class="modal-actions">
+        <button class="back-btn" data-back="2">← Назад</button>
+        <button class="next-btn" data-next="4">Далее →</button>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step-panel" data-step="4">
+      <p class="modal-sub" style="margin-bottom:14px;">Способ оплаты</p>
+      <div class="pay-methods" id="pay-methods">
+        <button class="pay-method active" data-pay="sbp">СБП</button>
+        <button class="pay-method" data-pay="card">Картой</button>
+        <button class="pay-method" data-pay="mir">Mir Pay</button>
+      </div>
+      <div class="qr-wrap" id="qr-wrap">
+        <div class="qr-code" id="qr-code"></div>
+        <div style="font-family:'Cormorant Garamond',serif;font-style:italic;">Отсканируйте код в приложении банка</div>
+        <div class="timer" id="timer">05:00</div>
+      </div>
+      <div class="modal-actions">
+        <button class="back-btn" data-back="3">← Назад</button>
+        <button class="next-btn" id="pay-go">Оплатить</button>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step-panel" data-step="5">
+      <div class="success-screen" id="success-screen">
+        <div class="success-icon gold-bg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1a1410" stroke-width="2.5"><polyline points="5 13 10 18 20 7"/></svg>
+        </div>
+        <h3 class="section-title" style="font-size:1.6rem;">Заказ оформлен</h3>
+        <div class="order-num gold-text" id="order-num">#VE-000000</div>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--text-soft);line-height:1.6;">
+          Детали отправлены на указанный email.<br/>Мы свяжемся с вами в течение часа.
+        </p>
+        <button class="next-btn" id="finish-btn" style="margin-top:24px;">Закрыть</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   VOLGA ESSENCE — JavaScript
+   ========================================================= */
+
+/* ---------- Custom cursor ---------- */
+const dot  = document.querySelector('.cursor-dot');
+const ring = document.querySelector('.cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+window.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  dot.style.left = mx + 'px';
+  dot.style.top  = my + 'px';
+  dot.style.transform = 'translate(-50%,-50%)';
+});
+(function loopCursor(){
+  rx += (mx - rx) * .18;
+  ry += (my - ry) * .18;
+  ring.style.left = rx + 'px';
+  ring.style.top  = ry + 'px';
+  ring.style.transform = 'translate(-50%,-50%) rotate(45deg)';
+  requestAnimationFrame(loopCursor);
+})();
+document.addEventListener('mouseover', e => {
+  if (e.target.closest('a,button,.perfume-card,input,.volume-opt,.pay-method,.leaflet-marker-icon'))
+    ring.classList.add('hover');
+});
+document.addEventListener('mouseout', e => {
+  if (e.target.closest('a,button,.perfume-card,input,.volume-opt,.pay-method,.leaflet-marker-icon'))
+    ring.classList.remove('hover');
+});
+
+/* ---------- Theme toggle ---------- */
+const themeBtn = document.getElementById('theme-toggle');
+const themeIcon = document.getElementById('theme-icon');
+themeBtn.addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  if (document.body.classList.contains('dark')) {
+    themeIcon.innerHTML = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>';
+  } else {
+    themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+  }
+});
+
+/* ---------- Gold particles ---------- */
+function spawnParticle(){
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.style.left = Math.random()*100 + 'vw';
+  p.style.bottom = '-10px';
+  const dur = 8 + Math.random()*10;
+  p.style.animationDuration = dur + 's';
+  p.style.setProperty('--drift', (Math.random()*80 - 40) + 'px');
+  const sz = (2 + Math.random()*3);
+  p.style.width = p.style.height = sz + 'px';
+  document.body.appendChild(p);
+  setTimeout(() => p.remove(), dur*1000);
+}
+setInterval(spawnParticle, 600);
+
+/* ---------- Reveal on scroll ---------- */
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: .12 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+/* ---------- Catalog data ---------- */
+const perfumes = [
+  { id:'astrakhan', name:'Astrakhan Amber', family:'oriental', familyLabel:'Восточный',
+    top:'Шафран, мандарин', heart:'Роза, амбра', base:'Уд, ладан, мускус',
+    desc:'Густой закат над каспийским берегом. Вязкий, тёплый, царственный.',
+    price:12400, color1:'#8b4513', color2:'#d4a017' },
+  { id:'kazan', name:'Kazan Oud', family:'woody', familyLabel:'Древесный',
+    top:'Бергамот, кардамон', heart:'Уд, роза', base:'Сандал, ваниль',
+    desc:'Дым медных куполов и молитвенных свитков. Глубокий, церемониальный.',
+    price:14200, color1:'#3e2723', color2:'#a1887f' },
+  { id:'samara', name:'Samara Rose', family:'floral', familyLabel:'Цветочный',
+    top:'Малиновый лист, личи', heart:'Дамасская роза, пион', base:'Пачули, белый мускус',
+    desc:'Волжский сад после дождя. Сочный, хрустальный, юный.',
+    price:10900, color1:'#c2185b', color2:'#f8bbd0' },
+  { id:'nizhny', name:'Nizhny Musk', family:'oriental', familyLabel:'Восточный',
+    top:'Чёрный перец, инжир', heart:'Белый мускус, иммортель', base:'Бензоин, кожа',
+    desc:'Старый купеческий особняк, бархат и тёплая кожа перчаток.',
+    price:13600, color1:'#4a148c', color2:'#ce93d8' },
+  { id:'tver', name:'Tver Iris', family:'floral', familyLabel:'Цветочный',
+    top:'Лимон Мейера, морская соль', heart:'Ирис, фиалка', base:'Кашемир, ирисовый корень',
+    desc:'Серебристая дымка над истоком. Прохладный, пудровый, аристократичный.',
+    price:11800, color1:'#5c6bc0', color2:'#c5cae9' },
+  { id:'yaroslavl', name:'Yaroslavl Vetiver', family:'fresh', familyLabel:'Свежий',
+    top:'Розовый грейпфрут, можжевельник', heart:'Гаитянский ветивер, лабданум', base:'Сухой мох, дуб',
+    desc:'Прохлада соснового бора после грозы. Мужественный, земляной.',
+    price:11400, color1:'#2e7d32', color2:'#81c784' },
+  { id:'saratov', name:'Saratov Saffron', family:'oriental', familyLabel:'Восточный',
+    top:'Шафран, розовый перец', heart:'Тубероза, османтус', base:'Кастореум, амбра',
+    desc:'Золото степного заката. Пряный, медовый, гипнотический.',
+    price:13200, color1:'#e65100', color2:'#ffb74d' },
+  { id:'ulyanovsk', name:'Ulyanovsk Leather', family:'woody', familyLabel:'Древесный',
+    top:'Берёзовый дёготь, чёрный чай', heart:'Кожа, табак', base:'Кедр, ваниль, берёста',
+    desc:'Аромат охотничьего трофея в библиотеке прадеда.',
+    price:14800, color1:'#3e2723', color2:'#8d6e63' },
+];
+
+function bottleSVG(c1, c2, id){
+  return `
+  <svg viewBox="0 0 120 170" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="b-${id}" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="${c1}"/>
+        <stop offset="100%" stop-color="${c2}"/>
+      </linearGradient>
+      <linearGradient id="g-${id}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#fcf6ba"/>
+        <stop offset="50%" stop-color="#bf953f"/>
+        <stop offset="100%" stop-color="#aa771c"/>
+      </linearGradient>
+    </defs>
+    <rect x="48" y="5" width="24" height="22" rx="2" fill="url(#g-${id})"/>
+    <rect x="42" y="27" width="36" height="10" fill="url(#g-${id})" opacity=".9"/>
+    <path d="M30,37 L90,37 L95,52 L95,150 Q95,165 60,165 Q25,165 25,150 L25,52 Z"
+          fill="url(#b-${id})" stroke="url(#g-${id})" stroke-width="1"/>
+    <rect x="38" y="80" width="44" height="50" fill="rgba(255,255,255,0.85)" stroke="url(#g-${id})" stroke-width=".6"/>
+    <text x="60" y="100" text-anchor="middle" font-family="Playfair Display, serif" font-size="7" fill="#1a1410" letter-spacing="1">VOLGA</text>
+    <text x="60" y="112" text-anchor="middle" font-family="Playfair Display, serif" font-size="5" fill="#666">ESSENCE</text>
+    <line x1="44" y1="118" x2="76" y2="118" stroke="url(#g-${id})" stroke-width=".5"/>
+    <ellipse cx="42" cy="90" rx="6" ry="40" fill="#fff" opacity=".25"/>
+  </svg>`;
+}
+
+/* Render catalog */
+const grid = document.getElementById('catalog-grid');
+function renderCatalog(filter='all'){
+  grid.innerHTML = '';
+  const filtered = perfumes.filter(p => filter==='all' || p.family===filter);
+  if (!filtered.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--text-soft);padding:40px;">В этом семействе ароматы скоро появятся...</div>`;
+    return;
+  }
+  filtered.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'perfume-card';
+    card.dataset.family = p.family;
+    card.innerHTML = `
+      <div class="bottle">${bottleSVG(p.color1, p.color2, p.id)}</div>
+      <div class="perfume-name">${p.name}</div>
+      <div class="perfume-family">${p.familyLabel}</div>
+      <div class="pyramid">
+        <b>Верх:</b> ${p.top}<br/>
+        <b>Сердце:</b> ${p.heart}<br/>
+        <b>База:</b> ${p.base}
+      </div>
+      <div class="perfume-desc">${p.desc}</div>
+      <div class="perfume-price">${p.price.toLocaleString('ru-RU')} ₽</div>
+      <button class="order-btn" data-id="${p.id}">Заказать</button>
+    `;
+    // Tilt
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width;
+      const y = (e.clientY - r.top) / r.height;
+      card.style.setProperty('--mx', (x*100)+'%');
+      card.style.setProperty('--my', (y*100)+'%');
+      card.style.transform = `perspective(900px) rotateX(${(y-.5)*-8}deg) rotateY(${(x-.5)*8}deg) translateY(-6px)`;
+    });
+    card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+    grid.appendChild(card);
+  });
+}
+renderCatalog();
+
+document.getElementById('filters').addEventListener('click', e => {
+  const b = e.target.closest('.filter-btn');
+  if (!b) return;
+  document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  renderCatalog(b.dataset.f);
+});
+
+/* ---------- Modal / Order flow ---------- */
+const modal = document.getElementById('modal');
+const modalTitle = document.getElementById('modal-title');
+const stepper = document.getElementById('stepper');
+let currentStep = 1;
+let currentPerfume = null;
+let currentVolume = 30;
+let currentPayment = 'sbp';
+
+function formatRub(n){ return n.toLocaleString('ru-RU') + ' ₽'; }
+
+function openModal(id){
+  currentPerfume = perfumes.find(p => p.id===id);
+  if (!currentPerfume) return;
+  modalTitle.textContent = currentPerfume.name;
+  // update volume prices
+  document.querySelectorAll('.volume-opt').forEach(v => {
+    const mult = parseFloat(v.dataset.mult);
+    const price = Math.round(currentPerfume.price*mult/100)*100;
+    v.querySelector('.price').textContent = formatRub(price);
+  });
+  currentVolume = 30;
+  document.querySelectorAll('.volume-opt').forEach((v,i) => v.classList.toggle('active', i===0));
+  goStep(1);
+  modal.classList.add('active');
+  setTimeout(() => { if (mapInstance) mapInstance.invalidateSize(); }, 300);
+}
+function closeModal(){
+  modal.classList.remove('active');
+  clearInterval(timerInterval);
+  document.getElementById('qr-wrap').classList.remove('show');
+}
+document.getElementById('modal-close').addEventListener('click', closeModal);
+modal.addEventListener('click', e => { if (e.target===modal) closeModal(); });
+document.addEventListener('click', e => {
+  const ob = e.target.closest('.order-btn');
+  if (ob) openModal(ob.dataset.id);
+});
+
+function goStep(n){
+  currentStep = n;
+  document.querySelectorAll('.step-panel').forEach(p =>
+    p.classList.toggle('active', +p.dataset.step === n));
+  let dotIdx = 0;
+  [...stepper.children].forEach(el => {
+    if (el.classList.contains('step-dot')) {
+      dotIdx++;
+      el.classList.toggle('active', dotIdx <= n);
+    }
+  });
+  if (n===3) setTimeout(initMap, 120);
+}
+
+document.querySelectorAll('[data-next]').forEach(b =>
+  b.addEventListener('click', () => {
+    if (currentStep===2 && !validateContacts()) return;
+    if (currentStep===3 && !selectedPickup) {
+      document.getElementById('selected-pickup').textContent = 'Пожалуйста, выберите пункт выдачи на карте';
+      return;
+    }
+    goStep(+b.dataset.next);
+  }));
+document.querySelectorAll('[data-back]').forEach(b =>
+  b.addEventListener('click', () => goStep(+b.dataset.back)));
+
+document.getElementById('volume-opts').addEventListener('click', e => {
+  const v = e.target.closest('.volume-opt');
+  if (!v) return;
+  document.querySelectorAll('.volume-opt').forEach(x => x.classList.remove('active'));
+  v.classList.add('active');
+  currentVolume = +v.dataset.vol;
+});
+
+/* Validation */
+function validateContacts(){
+  const name = document.getElementById('in-name');
+  const phone = document.getElementById('in-phone');
+  const email = document.getElementById('in-email');
+  let ok = true;
+  const checks = [
+    ['f-name', name, v => v.trim().length > 1],
+    ['f-phone', phone, v => /^[+\d\s()\-]{10,}$/.test(v.trim())],
+    ['f-email', email, v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())]
+  ];
+  checks.forEach(([fid, inp, test]) => {
+    const f = document.getElementById(fid);
+    if (!test(inp.value)) { f.classList.add('invalid'); ok = false; }
+    else f.classList.remove('invalid');
+  });
+  return ok;
+}
+['in-name','in-phone','in-email'].forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener('input', () => el.parentElement.classList.remove('invalid'));
+});
+
+/* Map */
+let mapInstance = null;
+let selectedPickup = null;
+const pickupPoints = [
+  { city:'Нижний Новгород', addr:'ул. Рождественская, 24', coords:[56.3269, 44.0075] },
+  { city:'Казань',          addr:'ул. Баумана, 15',        coords:[55.7887, 49.1221] },
+  { city:'Самара',          addr:'ул. Ленинградская, 32',  coords:[53.1959, 50.1008] },
+  { city:'Саратов',         addr:'пр. Кирова, 11',         coords:[51.5336, 46.0343] },
+  { city:'Ульяновск',       addr:'ул. Гончарова, 4',       coords:[54.3142, 48.4032] },
+  { city:'Ярославль',       addr:'ул. Кирова, 7',          coords:[57.6261, 39.8845] },
+  { city:'Тверь',           addr:'ул. Трёхсвятская, 22',   coords:[56.8587, 35.9176] },
+  { city:'Астрахань',       addr:'ул. Никольская, 9',      coords:[46.3497, 48.0408] },
+];
+function initMap(){
+  if (mapInstance) { mapInstance.invalidateSize(); return; }
+  mapInstance = L.map('pickup-map').setView([54.5, 44.5], 5);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18, attribution: '© OpenStreetMap'
+  }).addTo(mapInstance);
+  const goldIcon = L.divIcon({
+    className: 've-marker',
+    html: `<div style="width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#e8d690,#c9a961,#8a6d2e);box-shadow:0 0 14px rgba(201,169,97,.7);border:2px solid #fff;cursor:none;"></div>`,
+    iconSize: [22,22], iconAnchor: [11,11]
+  });
+  pickupPoints.forEach(p => {
+    const m = L.marker(p.coords, { icon: goldIcon }).addTo(mapInstance);
+    m.bindPopup(`<b>${p.city}</b><br/>${p.addr}`);
+    m.on('click', () => {
+      selectedPickup = p;
+      document.getElementById('selected-pickup').textContent = `✓ ${p.city}, ${p.addr}`;
+    });
+  });
+}
+
+/* Payment */
+document.getElementById('pay-methods').addEventListener('click', e => {
+  const b = e.target.closest('.pay-method');
+  if (!b) return;
+  document.querySelectorAll('.pay-method').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  currentPayment = b.dataset.pay;
+  document.getElementById('qr-wrap').classList.remove('show');
+});
+
+let timerInterval = null;
+document.getElementById('pay-go').addEventListener('click', () => {
+  const qr = document.getElementById('qr-wrap');
+  qr.classList.add('show');
+  document.getElementById('qr-code').innerHTML = fakeQR();
+  let remaining = 300;
+  const tEl = document.getElementById('timer');
+  clearInterval(timerInterval);
+  tEl.textContent = '05:00';
+  timerInterval = setInterval(() => {
+    remaining--;
+    const m = String(Math.floor(remaining/60)).padStart(2,'0');
+    const s = String(remaining%60).padStart(2,'0');
+    tEl.textContent = `${m}:${s}`;
+    if (remaining<=0) clearInterval(timerInterval);
+  }, 1000);
+  setTimeout(() => {
+    clearInterval(timerInterval);
+    document.getElementById('order-num').textContent =
+      '#VE-' + String(Math.floor(Math.random()*900000 + 100000));
+    goStep(5);
+    confettiBurst();
+  }, 3000);
+});
+
+/* Fake QR */
+function fakeQR(){
+  const size = 21;
+  let svg = `<svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" width="160" height="160" shape-rendering="crispEdges">`;
+  svg += `<rect width="${size}" height="${size}" fill="#fff"/>`;
+  for (let y=0; y<size; y++)
+    for (let x=0; x<size; x++)
+      if (Math.random() > .55)
+        svg += `<rect x="${x}" y="${y}" width="1" height="1" fill="#1a1410"/>`;
+  [[0,0],[size-7,0],[0,size-7]].forEach(([x,y]) => {
+    svg += `<rect x="${x}" y="${y}" width="7" height="7" fill="#fff"/>`;
+    svg += `<rect x="${x}" y="${y}" width="7" height="7" fill="none" stroke="#1a1410" stroke-width="1"/>`;
+    svg += `<rect x="${x+2}" y="${y+2}" width="3" height="3" fill="#bf953f"/>`;
+  });
+  svg += `</svg>`;
+  return svg;
+}
+
+/* Confetti */
+function confettiBurst(){
+  const colors = ['#bf953f','#fcf6ba','#b38728','#fbf5b7','#aa771c'];
+  const host = document.getElementById('success-screen');
+  for (let i=0; i<70; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random()*100 + '%';
+    c.style.background = colors[Math.floor(Math.random()*colors.length)];
+    c.style.animationDuration = (2 + Math.random()*2) + 's';
+    c.style.animationDelay = (Math.random()*.5) + 's';
+    c.style.transform = `rotate(${Math.random()*360}deg)`;
+    host.appendChild(c);
+    setTimeout(() => c.remove(), 4500);
+  }
+}
+
+document.getElementById('finish-btn').addEventListener('click', closeModal);
+
+/* ---------- Easter egg: long hover on hero logo ---------- */
+const heroLogo = document.querySelector('.hero-logo');
+let eggTimer = null;
+const eggLines = [
+  'Волга помнит…',
+  'Ты чувствуешь её течение?',
+  'Аромат — это память воды',
+  'Она несёт тебя далеко',
+  'Шёпот реки под золотом',
+];
+heroLogo.addEventListener('mouseenter', () => {
+  eggTimer = setTimeout(() => {
+    const el = document.createElement('div');
+    el.className = 'egg-bloom';
+    el.textContent = eggLines[Math.floor(Math.random()*eggLines.length)];
+    const r = heroLogo.getBoundingClientRect();
+    el.style.left = (r.left + r.width/2 - 120) + 'px';
+    el.style.top = (r.top + r.height + 10) + 'px';
+    el.style.width = '240px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3000);
+  }, 1500);
+});
+heroLogo.addEventListener('mouseleave', () => clearTimeout(eggTimer));
+
+document.addEventListener('keydown', e => { if (e.key==='Escape') closeModal(); });
+</script>
+</body>
+</html>
