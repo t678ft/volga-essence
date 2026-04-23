@@ -184,9 +184,56 @@ body.dark .nav {
 }
 .icon-btn:hover { border-color: var(--gold-solid); color: var(--gold-solid); transform: rotate(15deg); }
 .icon-btn svg { width: 16px; height: 16px; }
+
+/* ---------- BURGER ---------- */
+.burger {
+  display: none;
+  width: 36px; height: 36px;
+  border: 1px solid var(--card-border);
+  background: transparent;
+  color: var(--text);
+  cursor: none;
+  border-radius: 50%;
+  position: relative;
+}
+.burger span {
+  position: absolute; left: 9px; right: 9px;
+  height: 1px; background: currentColor;
+  transition: transform .3s ease, opacity .3s ease, top .3s ease;
+}
+.burger span:nth-child(1) { top: 13px; }
+.burger span:nth-child(2) { top: 18px; }
+.burger span:nth-child(3) { top: 23px; }
+.burger.open span:nth-child(1) { top: 18px; transform: rotate(45deg); }
+.burger.open span:nth-child(2) { opacity: 0; }
+.burger.open span:nth-child(3) { top: 18px; transform: rotate(-45deg); }
+
+.mobile-menu {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--bg);
+  z-index: 99;
+  display: none;
+  flex-direction: column;
+  justify-content: center; align-items: center;
+  gap: 28px;
+  opacity: 0;
+  transition: opacity .35s ease;
+}
+.mobile-menu.open { display: flex; opacity: 1; }
+.mobile-menu a {
+  font-family: 'Italiana', serif;
+  font-size: 1.8rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-decoration: none;
+}
+.mobile-menu a:hover { color: var(--gold-solid); }
+
 @media (max-width: 768px) {
   .nav { padding: 12px 18px; }
   .nav-links { display: none; }
+  .burger { display: inline-flex; }
 }
 
 /* ---------- SECTION BASE ---------- */
@@ -877,6 +924,53 @@ footer small {
 }
 
 .leaflet-container, .leaflet-container * { cursor: none !important; }
+
+/* ---------- MOBILE OPTIMIZATIONS ---------- */
+@media (max-width: 768px) {
+  .hero { padding: 100px 16px 60px; min-height: 90vh; }
+  .hero-logo { letter-spacing: .14em; }
+  .hero-logo .amp { letter-spacing: .4em; margin-top: 14px; }
+  .hero-tagline { font-size: 1.05rem; margin-top: 28px; padding: 0 10px; }
+  .hero-cta { padding: 14px 34px; font-size: .7rem; letter-spacing: .3em; margin-top: 40px; }
+  .hero-ornament { width: min(320px, 80vw); }
+
+  .ornate-frame { padding: 46px 22px; }
+  .about-text p { font-size: 1.1rem; line-height: 1.7; }
+  .about-text .about-motto { font-size: 1.15rem; letter-spacing: .14em; }
+
+  .filters { gap: 8px; margin-bottom: 36px; }
+  .filter-btn { padding: 9px 16px; font-size: .65rem; letter-spacing: .22em; }
+
+  .catalog-grid { grid-template-columns: 1fr; gap: 22px; }
+  .perfume-card { padding: 26px 20px 22px; max-width: 400px; margin: 0 auto; }
+
+  .contact-card { gap: 22px; }
+
+  .modal { padding: 50px 22px 30px; max-height: 94vh; }
+  .modal-title { font-size: 1.5rem; letter-spacing: .14em; }
+  .stepper { gap: 2px; margin-bottom: 24px; }
+  .step-dot { width: 24px; height: 24px; font-size: .7rem; }
+  .step-line { flex: 0 0 14px; }
+  .volume-opts { gap: 6px; }
+  .volume-opt { padding: 18px 4px; }
+  .volume-opt .vol { font-size: 1.15rem; }
+  .volume-opt .price { font-size: .78rem; }
+  .pay-methods { gap: 6px; }
+  .pay-method { padding: 14px 4px; font-size: .65rem; letter-spacing: .12em; }
+  .next-btn, .back-btn { padding: 12px 18px; font-size: .66rem; letter-spacing: .22em; }
+  #pickup-map { height: 260px; }
+
+  footer { padding: 48px 20px 32px; }
+  footer .foot-logo { font-size: 1.2rem; letter-spacing: .35em; }
+  footer .foot-links { gap: 18px; }
+}
+
+@media (max-width: 420px) {
+  .nav-logo { font-size: 1.1rem; letter-spacing: .35em; }
+  .section-title { font-size: 2rem; letter-spacing: .14em; }
+  .hero-logo { font-size: clamp(2.6rem, 14vw, 4rem); }
+  .perfume-name { font-size: 1.3rem; }
+}
 </style>
 </head>
 <body>
@@ -899,8 +993,15 @@ footer small {
         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
       </svg>
     </button>
+    <button class="burger" id="burger" aria-label="Меню"><span></span><span></span><span></span></button>
   </div>
 </nav>
+
+<div class="mobile-menu" id="mobile-menu">
+  <a href="#about" data-mclose>О бренде</a>
+  <a href="#catalog" data-mclose>Каталог</a>
+  <a href="#contacts" data-mclose>Контакты</a>
+</div>
 
 <!-- ============ HERO ============ -->
 <header class="hero" id="top">
@@ -1512,6 +1613,19 @@ heroLogo.addEventListener('mouseenter', () => {
 heroLogo.addEventListener('mouseleave', () => clearTimeout(eggTimer));
 
 document.addEventListener('keydown', e => { if (e.key==='Escape') closeModal(); });
+
+/* ---------- Burger menu ---------- */
+const burger = document.getElementById('burger');
+const mMenu  = document.getElementById('mobile-menu');
+burger.addEventListener('click', () => {
+  burger.classList.toggle('open');
+  mMenu.classList.toggle('open');
+});
+mMenu.querySelectorAll('a').forEach(a =>
+  a.addEventListener('click', () => {
+    burger.classList.remove('open');
+    mMenu.classList.remove('open');
+  }));
 </script>
 </body>
 </html>
